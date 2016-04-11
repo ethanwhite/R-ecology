@@ -35,8 +35,6 @@ Load required packages
 ```{r}
 # plotting package
 library(ggplot2)
-# piping / chaining
-library(magrittr)
 # modern dataframe manipulations
 library(dplyr)
 ```
@@ -59,23 +57,12 @@ summary(surveys_raw)
 
 There are few things we need to clean in the dataset.
 
-There are missing values for species_id in some records. Let's remove those.
-
-```{r}
-surveys_complete <- surveys_raw %>%
-                    filter(species_id != "")
-```
-
 We saw in summary, there were NA's in weight and hindfoot_length. Let's remove
-rows with missing values in weight and hindfoot_length. In fact, let's combine
-this with removing empty species_id, so we have one command and don't make lots
-of intermediate variable names. This is where piping becomes really handy!
+rows with missing values in weight and hindfoot_length.
 
 ```{r}
 surveys_complete <- surveys_raw %>%
-                    filter(species_id != "") %>%        # remove missing species_id
-                    filter(!is.na(weight)) %>%          # remove missing weight
-                    filter(!is.na(hindfoot_length))     # remove missing hindfoot_length
+                    filter(!is.na(weight), !is.na(hindfoot_length))
 ```
 
 There are a lot of species with low counts, let's remove the species with less
@@ -113,7 +100,7 @@ We will make the same plot using the `ggplot2` package.
 from data in a dataframe. It uses default settings, which help creating
 publication quality plots with a minimal amount of settings and tweaking.
 
-ggplot graphics are built step by step by adding new elements.
+`ggplot` graphics are built step by step by adding new elements.
 
 To build a ggplot we need to:
 

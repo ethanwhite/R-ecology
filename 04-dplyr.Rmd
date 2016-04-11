@@ -38,19 +38,15 @@ library("dplyr")    ## load the package
 ## What is `dplyr`?
 
 The package `dplyr` provides easy tools for the most common data manipulation
-tasks. It is built to work directly with data frames. The thinking behind it was
-largely inspired by the package `plyr` which has been in use for some time but
-suffered from being slow in some cases.` dplyr` addresses this by porting much
-of the computation to C++. An additional feature is the ability to work with
-data stored directly in an external database. The benefits of doing this are
-that the data can be managed natively in a relational database, queries can be
-conducted on that database, and only the results of the query returned.
+tasks. It is built to work directly with data frames.
 
-This addresses a common problem with R in that all operations are conducted in
-memory and thus the amount of data you can work with is limited by available
-memory. The database connections essentially remove that limitation in that you
-can have a database of many 100s GB, conduct queries on it directly, and pull
-back just what you need for analysis in R.
+dply also lets us easily access and work with data stored directly in an external
+database. So, once we learn about SQL databases tomorrow you'll be able to integrate
+those databases with R via dplyr. This addresses a common problem with R in that
+all operations are conducted in memory and thus the amount of data you can work with
+is limited by available memory. The database connections essentially remove that
+limitation in that you can have a database of many 100s GB, conduct queries on it
+directly, and pull back just what you need for analysis in R.
 
 ### Selecting columns and filtering rows
 
@@ -63,7 +59,7 @@ frame (`surveys`), and the subsequent arguments are the columns to keep.
 select(surveys, plot_id, species_id, weight)
 ```
 
-To choose rows, use `filter()`:
+To choose rows meeting some conditions, use `filter()`:
 
 ```{r, purl = FALSE}
 filter(surveys, year == 1995)
@@ -76,12 +72,11 @@ ways to do this: use intermediate steps, nested functions, or pipes. With the
 intermediate steps, you essentially create a temporary data frame and use that
 as input to the next function. This can clutter up your workspace with lots of
 objects. You can also nest functions (i.e. one function inside of another).
-This is handy, but can be difficult to read if too many functions are nested as
-the process from inside out. The last option, pipes, are a fairly recent
-addition to R. Pipes let you take the output of one function and send it
-directly to the next, which is useful when you need to many things to the same
-data set.  Pipes in R look like `%>%` and are made available via the `magrittr`
-package installed as part of `dplyr`.
+This is handy, but can be difficult to read if too many functions are nested.
+The last option, pipes, are a fairly recent addition to R. Pipes let you take
+the output of one function and send it directly to the next, which is useful
+when you need to many things to the same data set.  Pipes in R look like `%>%`
+and are made available via the `magrittr` package installed as part of `dplyr`.
 
 ```{r, purl = FALSE}
 surveys %>%
@@ -90,10 +85,11 @@ surveys %>%
 ```
 
 In the above we use the pipe to send the `surveys` data set first through
-`filter`, to keep rows where `wgt` was less than 5, and then through `select` to
+`filter`, to keep rows where `weight` was less than 5, and then through `select` to
 keep the `species` and `sex` columns. When the data frame is being passed to the
 `filter()` and `select()` functions through a pipe, we don't need to include it
-as an argument to these functions anymore.
+as an argument to these functions anymore. The output from the pipe becomes the
+first argument in the function after the pipe.
 
 If we wanted to create a new object with this smaller version of the data we
 could do so by assigning it a new name:
@@ -125,7 +121,7 @@ surveys %>%
 
 ### Mutate
 
-Frequently you'll want to create new columns based on the values in existing
+We often want to create new columns based on the values in existing
 columns, for example to do unit conversions, or find the ratio of values in two
 columns. For this we'll use `mutate()`.
 
@@ -153,7 +149,7 @@ insert a `filter()` in this chain:
 surveys %>%
   filter(!is.na(weight)) %>%
   mutate(weight_kg = weight / 1000) %>%
-  head
+  head()
 ```
 
 `is.na()` is a function that determines whether something is or is not an `NA`.
@@ -184,8 +180,8 @@ surveys_hindfoot_half %>%
 
 Many data analysis tasks can be approached using the "split-apply-combine"
 paradigm: split the data into groups, apply some analysis to each group, and
-then combine the results. `dplyr` makes this very easy through the use of the
-`group_by()` function. `group_by()` splits the data into groups upon which some
+then combine the results. `dplyr` makes this easy using the `group_by()`
+function. `group_by()` splits the data into groups on which some
 operations can be run. For example, if we wanted to group by sex and find the
 number of rows of data for each sex, we would do:
 
@@ -195,8 +191,10 @@ surveys %>%
   tally()
 ```
 
-Here, `tally()` is the action applied to the groups created to `group_by()` and counts the total number of records for each category. `group_by()` is often used together with `summarize()` which collapses each
-group into a single-row summary of that group. So to view mean `weight` by sex:
+Here, `tally()` is the action applied to the groups created to `group_by()` and
+counts the total number of records for each category. `group_by()` is often used
+together with `summarize()` which collapses each group into a single-row summary
+of that group. So to view mean `weight` by sex:
 
 ```{r, purl = FALSE}
 surveys %>%
